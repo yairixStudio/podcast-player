@@ -3,441 +3,337 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎙️ הפלייר שלי</title>
+  <title>חן ליברמן וישי שנרב — כאן ב׳</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif;
-      background: #0f0f13;
+    html, body {
+      height: 100%;
+      font-family: 'Heebo', sans-serif;
+      background: #121212;
       color: #fff;
-      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: url('photo_130.jpg') center center / cover no-repeat;
+      filter: blur(40px) brightness(0.35) saturate(1.4);
+      transform: scale(1.08);
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .stage {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px 40px;
+      padding: 24px 20px 32px;
     }
 
-    /* ─── Upload Screen ─── */
-    #upload-screen {
+    /* ── Album art ── */
+    .art-wrap {
+      width: min(280px, 72vw);
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.7);
+      margin-bottom: 32px;
+      flex-shrink: 0;
+    }
+    .art-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ── Info ── */
+    .info {
+      width: 100%;
+      max-width: 360px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 32px;
-      width: 100%;
-      max-width: 420px;
+      gap: 4px;
+      margin-bottom: 22px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      color: #fff;
+    }
+    .subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.6);
     }
 
-    .logo {
-      font-size: 13px;
-      letter-spacing: 0.2em;
-      color: #555;
-      text-transform: uppercase;
-    }
-
-    .drop-zone {
+    /* ── Progress ── */
+    .progress-section {
       width: 100%;
-      border: 1.5px dashed #333;
-      border-radius: 20px;
-      padding: 48px 24px;
-      text-align: center;
+      max-width: 360px;
+      margin-bottom: 18px;
+    }
+    .progress-bar-wrap {
+      position: relative;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      background: #151519;
+      transition: height 0.15s;
     }
-    .drop-zone:hover, .drop-zone.over {
-      border-color: #7c5cfc;
-      background: #1a1a22;
-    }
-    .drop-zone .icon { font-size: 40px; margin-bottom: 14px; }
-    .drop-zone h2 { font-size: 17px; font-weight: 500; margin-bottom: 8px; color: #e0e0e0; }
-    .drop-zone p { font-size: 13px; color: #666; line-height: 1.6; }
-
-    .divider {
-      display: flex; align-items: center; gap: 14px; width: 100%;
-      color: #444; font-size: 12px;
-    }
-    .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: #222;
-    }
-
-    .upload-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .upload-btn {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 8px; padding: 20px 12px;
-      border: 1.5px solid #222; border-radius: 14px;
-      background: #151519; cursor: pointer;
-      transition: all 0.2s; color: #aaa; font-size: 13px;
-    }
-    .upload-btn:hover { border-color: #7c5cfc; color: #fff; background: #1a1a22; }
-    .upload-btn .btn-icon { font-size: 24px; }
-
-    input[type=file] { display: none; }
-
-    /* ─── Player Screen ─── */
-    #player-screen { display: none; width: 100%; max-width: 380px; }
-
-    .player-card {
-      background: linear-gradient(160deg, #1e1a2e 0%, #13131a 100%);
-      border: 1px solid #2a2535;
-      border-radius: 28px;
-      padding: 32px 24px 28px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
-    }
-
-    .cover-wrap {
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 18px;
-      overflow: hidden;
-      margin-bottom: 24px;
-      background: #1a1520;
-      display: flex; align-items: center; justify-content: center;
-      position: relative;
-    }
-    .cover-wrap img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    .cover-default {
-      font-size: 72px;
-      opacity: 0.5;
-    }
-    .playing-indicator {
-      position: absolute; bottom: 12px; right: 12px;
-      display: flex; gap: 3px; align-items: flex-end;
-      height: 20px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .playing-indicator.active { opacity: 1; }
-    .playing-indicator span {
-      display: block; width: 3px; background: #fff;
-      border-radius: 2px; animation: bounce 0.8s ease-in-out infinite;
-    }
-    .playing-indicator span:nth-child(1) { height: 8px; animation-delay: 0s; }
-    .playing-indicator span:nth-child(2) { height: 16px; animation-delay: 0.15s; }
-    .playing-indicator span:nth-child(3) { height: 12px; animation-delay: 0.3s; }
-    .playing-indicator span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
-    @keyframes bounce {
-      0%, 100% { transform: scaleY(0.5); }
-      50% { transform: scaleY(1); }
-    }
-
-    .track-info { margin-bottom: 20px; }
-    .track-title {
-      font-size: 18px; font-weight: 600; color: #fff;
-      margin-bottom: 4px; line-height: 1.35;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .track-sub { font-size: 13px; color: #666; }
-
-    /* Progress */
-    .progress-wrap {
-      margin-bottom: 6px;
-      position: relative;
-    }
-    .progress-bar {
-      width: 100%; height: 4px;
-      background: #2a2535; border-radius: 99px;
-      cursor: pointer; position: relative; overflow: hidden;
-    }
+    .progress-bar-wrap:hover { height: 6px; }
     .progress-fill {
+      position: absolute;
+      top: 0; left: 0;
       height: 100%;
-      background: linear-gradient(90deg, #7c5cfc, #b06cfc);
-      border-radius: 99px;
-      width: 0%;
-      transition: width 0.1s linear;
+      background: #1db954;
+      border-radius: 2px;
       pointer-events: none;
     }
-    .progress-bar:hover .progress-fill { background: linear-gradient(90deg, #9b7cff, #c08cff); }
-
+    .progress-thumb {
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      transform: translateY(-50%);
+    }
+    .progress-bar-wrap:hover .progress-thumb { opacity: 1; }
     .time-row {
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: #555; margin-bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
     }
 
-    /* Controls */
+    /* ── Controls ── */
     .controls {
-      display: flex; align-items: center; justify-content: center;
-      gap: 24px; margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      margin-bottom: 28px;
     }
-    .ctrl-btn {
-      background: none; border: none; cursor: pointer;
-      color: #888; font-size: 20px; padding: 8px;
-      border-radius: 50%; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
+    .btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.7);
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, transform 0.1s;
     }
-    .ctrl-btn:hover { color: #fff; background: #ffffff12; }
-
-    .play-btn {
-      width: 58px; height: 58px;
-      background: linear-gradient(135deg, #7c5cfc, #5c3fd0);
-      border: none; border-radius: 50%;
-      color: #fff; font-size: 22px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 24px rgba(124,92,252,0.45);
-      transition: all 0.15s;
-    }
-    .play-btn:hover { transform: scale(1.06); box-shadow: 0 12px 32px rgba(124,92,252,0.6); }
-    .play-btn:active { transform: scale(0.97); }
-
-    /* Volume */
-    .volume-row {
-      display: flex; align-items: center; gap: 10px;
-      padding-top: 16px; border-top: 1px solid #1e1a2e;
-    }
-    .vol-icon { font-size: 16px; color: #555; }
-    input[type=range] {
-      flex: 1; height: 3px; cursor: pointer;
-      appearance: none; background: #2a2535; border-radius: 99px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      appearance: none; width: 14px; height: 14px;
-      border-radius: 50%; background: #7c5cfc; cursor: pointer;
-    }
-
-    /* Edit bar */
-    .edit-bar {
-      margin-top: 16px;
-      display: flex; gap: 8px; justify-content: center;
-    }
-    .edit-pill {
-      font-size: 12px; color: #555; background: #151519;
-      border: 1px solid #222; border-radius: 99px;
-      padding: 6px 14px; cursor: pointer; transition: all 0.2s;
-    }
-    .edit-pill:hover { color: #fff; border-color: #555; }
-
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: #252030; color: #fff; font-size: 13px;
-      padding: 10px 20px; border-radius: 99px;
+    .btn:hover { color: #fff; transform: scale(1.1); }
+    .btn-play {
+      width: 56px;
+      height: 56px;
+      background: #fff;
+      color: #000 !important;
+      border-radius: 50%;
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    .btn-play:hover { background: #e8e8e8; transform: scale(1.06); }
+
+    /* ── Volume ── */
+    .volume-row {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .volume-row .vol-icon { color: rgba(255,255,255,0.6); flex-shrink: 0; }
+    .vol-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .vol-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      background: rgba(255,255,255,0.6);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    /* ── Branding ── */
+    .brand {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.5px;
+      z-index: 2;
       white-space: nowrap;
     }
-    .toast.show { opacity: 1; }
 
-    /* Responsive */
-    @media (max-width: 400px) {
-      .player-card { padding: 24px 18px 22px; }
+    @media (max-height: 580px) {
+      .art-wrap { width: min(160px, 40vw); margin-bottom: 16px; }
+      .controls { gap: 20px; margin-bottom: 14px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Upload Screen ── -->
-<div id="upload-screen">
-  <div class="logo">🎙 פלייר</div>
+<div class="bg"></div>
 
-  <div class="drop-zone" id="drop-zone">
-    <div class="icon">🎧</div>
-    <h2>גרור לכאן קובץ אודיו</h2>
-    <p>MP3 · M4A · WAV · AAC · OGG<br/>עד 500MB</p>
+<div class="stage">
+
+  <div class="art-wrap">
+    <img src="photo_130.jpg" alt="חן ליברמן וישי שנרב" />
   </div>
 
-  <div class="divider">או</div>
-
-  <div class="upload-grid">
-    <label class="upload-btn" for="audio-input">
-      <span class="btn-icon">🎵</span>
-      <span>בחר אודיו</span>
-    </label>
-    <label class="upload-btn" for="image-input">
-      <span class="btn-icon">🖼️</span>
-      <span>הוסף תמונה</span>
-    </label>
+  <div class="info">
+    <div class="title">חן ליברמן וישי שנרב</div>
+    <div class="subtitle">כאן ב׳ &nbsp;·&nbsp; 23 באפריל 2026</div>
   </div>
 
-  <input type="file" id="audio-input" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg" />
-  <input type="file" id="image-input" accept="image/*" />
-</div>
-
-<!-- ── Player Screen ── -->
-<div id="player-screen">
-  <div class="player-card">
-    <div class="cover-wrap" id="cover-wrap">
-      <div class="cover-default" id="cover-default">🎙️</div>
-      <img id="cover-img" style="display:none" alt="cover" />
-      <div class="playing-indicator" id="playing-indicator">
-        <span></span><span></span><span></span><span></span>
-      </div>
-    </div>
-
-    <div class="track-info">
-      <div class="track-title" id="track-title">—</div>
-      <div class="track-sub" id="track-sub">לחץ להשמעה</div>
-    </div>
-
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+  <div class="progress-section">
+    <div class="progress-bar-wrap" id="progressBar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      <div class="progress-thumb" id="progressThumb" style="right:100%"></div>
     </div>
     <div class="time-row">
-      <span id="time-current">0:00</span>
-      <span id="time-total">0:00</span>
-    </div>
-
-    <div class="controls">
-      <button class="ctrl-btn" id="btn-back15" title="15 שניות אחורה">⏪</button>
-      <button class="play-btn" id="btn-play">▶</button>
-      <button class="ctrl-btn" id="btn-fwd15" title="15 שניות קדימה">⏩</button>
-    </div>
-
-    <div class="volume-row">
-      <span class="vol-icon">🔈</span>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.02" value="1" />
-      <span class="vol-icon">🔊</span>
+      <span id="timeNow">0:00</span>
+      <span id="timeTot">0:00</span>
     </div>
   </div>
 
-  <div class="edit-bar">
-    <div class="edit-pill" id="btn-change-audio">🔄 אודיו אחר</div>
-    <div class="edit-pill" id="btn-change-img">🖼 שנה תמונה</div>
+  <div class="controls">
+    <button class="btn" id="btnRew" aria-label="15 שניות אחורה">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11.99 5V2l-4 3.99 4 4.01V6.99c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8.01-8z"/>
+        <text x="9" y="15" font-size="5" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="currentColor">15</text>
+      </svg>
+    </button>
+
+    <button class="btn btn-play" id="btnPlay" aria-label="נגן">
+      <svg id="iconPlay" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <svg id="iconPause" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
+    </button>
+
+    <button class="btn" id="btnFwd" aria-label="15 שניות קדימה">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 5v-3l4 4-4 4V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
+        <text x="15" y="15" font-size="5" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" fill="currentColor">15</text>
+      </svg>
+    </button>
   </div>
+
+  <div class="volume-row">
+    <svg class="vol-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
+    </svg>
+    <div class="vol-bar-wrap" id="volBar">
+      <div class="vol-fill" id="volFill" style="width:80%"></div>
+    </div>
+    <svg class="vol-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+    </svg>
+  </div>
+
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="brand">כאן ב׳</div>
 
-<audio id="audio-el"></audio>
+<audio id="audio" preload="auto" src="audio.mp3"></audio>
 
 <script>
-const $ = id => document.getElementById(id);
-const audio = $('audio-el');
+  const audio    = document.getElementById('audio');
+  const btnPlay  = document.getElementById('btnPlay');
+  const iconPlay = document.getElementById('iconPlay');
+  const iconPause= document.getElementById('iconPause');
+  const btnRew   = document.getElementById('btnRew');
+  const btnFwd   = document.getElementById('btnFwd');
+  const pBar     = document.getElementById('progressBar');
+  const pFill    = document.getElementById('progressFill');
+  const pThumb   = document.getElementById('progressThumb');
+  const timeNow  = document.getElementById('timeNow');
+  const timeTot  = document.getElementById('timeTot');
+  const volBar   = document.getElementById('volBar');
+  const volFill  = document.getElementById('volFill');
 
-// ── State ──
-let hasAudio = false;
-
-// ── File Handling ──
-function loadAudio(file) {
-  const url = URL.createObjectURL(file);
-  audio.src = url;
-  audio.load();
-  $('track-title').textContent = file.name.replace(/\.[^.]+$/, '');
-  $('track-sub').textContent = formatSize(file.size);
-  hasAudio = true;
-  showPlayer();
-  toast('אודיו נטען ✓');
-}
-
-function loadImage(file) {
-  const url = URL.createObjectURL(file);
-  $('cover-img').src = url;
-  $('cover-img').style.display = 'block';
-  $('cover-default').style.display = 'none';
-  toast('תמונה נוספה ✓');
-}
-
-function showPlayer() {
-  $('upload-screen').style.display = 'none';
-  $('player-screen').style.display = 'block';
-}
-
-function formatSize(b) {
-  if (b > 1e6) return (b / 1e6).toFixed(1) + ' MB';
-  return (b / 1e3).toFixed(0) + ' KB';
-}
-
-// ── Drop Zone ──
-const dz = $('drop-zone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('over');
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  if (file.type.startsWith('audio')) loadAudio(file);
-  else if (file.type.startsWith('image')) loadImage(file);
-});
-dz.addEventListener('click', () => $('audio-input').click());
-
-// ── File Inputs ──
-$('audio-input').addEventListener('change', e => { if (e.target.files[0]) loadAudio(e.target.files[0]); });
-$('image-input').addEventListener('change', e => { if (e.target.files[0]) loadImage(e.target.files[0]); });
-
-// ── Play / Pause ──
-const btnPlay = $('btn-play');
-btnPlay.addEventListener('click', () => {
-  if (!hasAudio) return;
-  audio.paused ? audio.play() : audio.pause();
-});
-
-audio.addEventListener('play', () => {
-  btnPlay.textContent = '⏸';
-  $('playing-indicator').classList.add('active');
-  $('track-sub').textContent = 'מתנגן...';
-});
-audio.addEventListener('pause', () => {
-  btnPlay.textContent = '▶';
-  $('playing-indicator').classList.remove('active');
-  $('track-sub').textContent = 'מושהה';
-});
-audio.addEventListener('ended', () => {
-  btnPlay.textContent = '▶';
-  $('playing-indicator').classList.remove('active');
-  $('track-sub').textContent = 'הסתיים';
-});
-
-// ── Seek ──
-$('progress-bar').addEventListener('click', e => {
-  if (!audio.duration) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  // RTL: right side = start
-  const ratio = 1 - (e.clientX - rect.left) / rect.width;
-  audio.currentTime = ratio * audio.duration;
-});
-
-audio.addEventListener('timeupdate', () => {
-  if (!audio.duration) return;
-  const pct = (audio.currentTime / audio.duration) * 100;
-  $('progress-fill').style.width = pct + '%';
-  $('time-current').textContent = fmt(audio.currentTime);
-  $('time-total').textContent = fmt(audio.duration);
-});
-
-audio.addEventListener('loadedmetadata', () => {
-  $('time-total').textContent = fmt(audio.duration);
-});
-
-function fmt(s) {
-  const m = Math.floor(s / 60);
-  const ss = Math.floor(s % 60).toString().padStart(2, '0');
-  if (m >= 60) {
-    const h = Math.floor(m / 60);
-    return `${h}:${(m % 60).toString().padStart(2,'0')}:${ss}`;
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s || 0));
+    return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
   }
-  return `${m}:${ss}`;
-}
 
-// ── Skip 15s ──
-$('btn-back15').addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 15); });
-$('btn-fwd15').addEventListener('click', () => { audio.currentTime = Math.min(audio.duration, audio.currentTime + 15); });
+  function setPlaying(p) {
+    iconPlay.style.display  = p ? 'none' : '';
+    iconPause.style.display = p ? '' : 'none';
+  }
 
-// ── Volume ──
-$('volume-slider').addEventListener('input', e => { audio.volume = e.target.value; });
+  function updateBar() {
+    if (!audio.duration) return;
+    const pct = audio.currentTime / audio.duration;
+    pFill.style.width  = (pct * 100) + '%';
+    // RTL: thumb at right side; 0% = right, 100% = left
+    pThumb.style.right = ((1 - pct) * 100) + '%';
+    timeNow.textContent = fmt(audio.currentTime);
+    timeTot.textContent = fmt(audio.duration);
+  }
 
-// ── Edit buttons ──
-$('btn-change-audio').addEventListener('click', () => $('audio-input').click());
-$('btn-change-img').addEventListener('click', () => $('image-input').click());
+  btnPlay.addEventListener('click', () => audio.paused ? audio.play() : audio.pause());
+  btnRew.addEventListener('click',  () => { audio.currentTime = Math.max(0, audio.currentTime - 15); });
+  btnFwd.addEventListener('click',  () => { audio.currentTime = Math.min(audio.duration||0, audio.currentTime + 15); });
 
-// ── Toast ──
-let toastTimer;
-function toast(msg) {
-  const el = $('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-}
+  audio.addEventListener('play',           () => setPlaying(true));
+  audio.addEventListener('pause',          () => setPlaying(false));
+  audio.addEventListener('ended',          () => setPlaying(false));
+  audio.addEventListener('timeupdate',     updateBar);
+  audio.addEventListener('loadedmetadata', () => { timeTot.textContent = fmt(audio.duration); });
+
+  // Seek on progress bar click (RTL: right = start)
+  pBar.addEventListener('click', e => {
+    const r = pBar.getBoundingClientRect();
+    const frac = 1 - (e.clientX - r.left) / r.width;
+    if (audio.duration) audio.currentTime = frac * audio.duration;
+  });
+
+  // Volume
+  audio.volume = 0.8;
+  volBar.addEventListener('click', e => {
+    const r = volBar.getBoundingClientRect();
+    audio.volume = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    volFill.style.width = (audio.volume * 100) + '%';
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space')      { e.preventDefault(); btnPlay.click(); }
+    if (e.code === 'ArrowRight') audio.currentTime = Math.max(0, audio.currentTime - 15);
+    if (e.code === 'ArrowLeft')  audio.currentTime = Math.min(audio.duration||0, audio.currentTime + 15);
+  });
 </script>
 </body>
 </html>
