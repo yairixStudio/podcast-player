@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎙️ הפלייר שלי</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif;
+      background: #0f0f13;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px 40px;
+    }
+
+    /* ─── Upload Screen ─── */
+    #upload-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      color: #555;
+      text-transform: uppercase;
+    }
+
+    .drop-zone {
+      width: 100%;
+      border: 1.5px dashed #333;
+      border-radius: 20px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #151519;
+    }
+    .drop-zone:hover, .drop-zone.over {
+      border-color: #7c5cfc;
+      background: #1a1a22;
+    }
+    .drop-zone .icon { font-size: 40px; margin-bottom: 14px; }
+    .drop-zone h2 { font-size: 17px; font-weight: 500; margin-bottom: 8px; color: #e0e0e0; }
+    .drop-zone p { font-size: 13px; color: #666; line-height: 1.6; }
+
+    .divider {
+      display: flex; align-items: center; gap: 14px; width: 100%;
+      color: #444; font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #222;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .upload-btn {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; padding: 20px 12px;
+      border: 1.5px solid #222; border-radius: 14px;
+      background: #151519; cursor: pointer;
+      transition: all 0.2s; color: #aaa; font-size: 13px;
+    }
+    .upload-btn:hover { border-color: #7c5cfc; color: #fff; background: #1a1a22; }
+    .upload-btn .btn-icon { font-size: 24px; }
+
+    input[type=file] { display: none; }
+
+    /* ─── Player Screen ─── */
+    #player-screen { display: none; width: 100%; max-width: 380px; }
+
+    .player-card {
+      background: linear-gradient(160deg, #1e1a2e 0%, #13131a 100%);
+      border: 1px solid #2a2535;
+      border-radius: 28px;
+      padding: 32px 24px 28px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    }
+
+    .cover-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: #1a1520;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .cover-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .cover-default {
+      font-size: 72px;
+      opacity: 0.5;
+    }
+    .playing-indicator {
+      position: absolute; bottom: 12px; right: 12px;
+      display: flex; gap: 3px; align-items: flex-end;
+      height: 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .playing-indicator.active { opacity: 1; }
+    .playing-indicator span {
+      display: block; width: 3px; background: #fff;
+      border-radius: 2px; animation: bounce 0.8s ease-in-out infinite;
+    }
+    .playing-indicator span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .playing-indicator span:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+    .playing-indicator span:nth-child(3) { height: 12px; animation-delay: 0.3s; }
+    .playing-indicator span:nth-child(4) { height: 18px; animation-delay: 0.1s; }
+    @keyframes bounce {
+      0%, 100% { transform: scaleY(0.5); }
+      50% { transform: scaleY(1); }
+    }
+
+    .track-info { margin-bottom: 20px; }
+    .track-title {
+      font-size: 18px; font-weight: 600; color: #fff;
+      margin-bottom: 4px; line-height: 1.35;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .track-sub { font-size: 13px; color: #666; }
+
+    /* Progress */
+    .progress-wrap {
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .progress-bar {
+      width: 100%; height: 4px;
+      background: #2a2535; border-radius: 99px;
+      cursor: pointer; position: relative; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7c5cfc, #b06cfc);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.1s linear;
+      pointer-events: none;
+    }
+    .progress-bar:hover .progress-fill { background: linear-gradient(90deg, #9b7cff, #c08cff); }
+
+    .time-row {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #555; margin-bottom: 22px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex; align-items: center; justify-content: center;
+      gap: 24px; margin-bottom: 24px;
+    }
+    .ctrl-btn {
+      background: none; border: none; cursor: pointer;
+      color: #888; font-size: 20px; padding: 8px;
+      border-radius: 50%; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ctrl-btn:hover { color: #fff; background: #ffffff12; }
+
+    .play-btn {
+      width: 58px; height: 58px;
+      background: linear-gradient(135deg, #7c5cfc, #5c3fd0);
+      border: none; border-radius: 50%;
+      color: #fff; font-size: 22px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(124,92,252,0.45);
+      transition: all 0.15s;
+    }
+    .play-btn:hover { transform: scale(1.06); box-shadow: 0 12px 32px rgba(124,92,252,0.6); }
+    .play-btn:active { transform: scale(0.97); }
+
+    /* Volume */
+    .volume-row {
+      display: flex; align-items: center; gap: 10px;
+      padding-top: 16px; border-top: 1px solid #1e1a2e;
+    }
+    .vol-icon { font-size: 16px; color: #555; }
+    input[type=range] {
+      flex: 1; height: 3px; cursor: pointer;
+      appearance: none; background: #2a2535; border-radius: 99px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: #7c5cfc; cursor: pointer;
+    }
+
+    /* Edit bar */
+    .edit-bar {
+      margin-top: 16px;
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .edit-pill {
+      font-size: 12px; color: #555; background: #151519;
+      border: 1px solid #222; border-radius: 99px;
+      padding: 6px 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .edit-pill:hover { color: #fff; border-color: #555; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #252030; color: #fff; font-size: 13px;
+      padding: 10px 20px; border-radius: 99px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* Responsive */
+    @media (max-width: 400px) {
+      .player-card { padding: 24px 18px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Upload Screen ── -->
+<div id="upload-screen">
+  <div class="logo">🎙 פלייר</div>
+
+  <div class="drop-zone" id="drop-zone">
+    <div class="icon">🎧</div>
+    <h2>גרור לכאן קובץ אודיו</h2>
+    <p>MP3 · M4A · WAV · AAC · OGG<br/>עד 500MB</p>
+  </div>
+
+  <div class="divider">או</div>
+
+  <div class="upload-grid">
+    <label class="upload-btn" for="audio-input">
+      <span class="btn-icon">🎵</span>
+      <span>בחר אודיו</span>
+    </label>
+    <label class="upload-btn" for="image-input">
+      <span class="btn-icon">🖼️</span>
+      <span>הוסף תמונה</span>
+    </label>
+  </div>
+
+  <input type="file" id="audio-input" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg" />
+  <input type="file" id="image-input" accept="image/*" />
+</div>
+
+<!-- ── Player Screen ── -->
+<div id="player-screen">
+  <div class="player-card">
+    <div class="cover-wrap" id="cover-wrap">
+      <div class="cover-default" id="cover-default">🎙️</div>
+      <img id="cover-img" style="display:none" alt="cover" />
+      <div class="playing-indicator" id="playing-indicator">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="track-info">
+      <div class="track-title" id="track-title">—</div>
+      <div class="track-sub" id="track-sub">לחץ להשמעה</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <div class="time-row">
+      <span id="time-current">0:00</span>
+      <span id="time-total">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="btn-back15" title="15 שניות אחורה">⏪</button>
+      <button class="play-btn" id="btn-play">▶</button>
+      <button class="ctrl-btn" id="btn-fwd15" title="15 שניות קדימה">⏩</button>
+    </div>
+
+    <div class="volume-row">
+      <span class="vol-icon">🔈</span>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.02" value="1" />
+      <span class="vol-icon">🔊</span>
+    </div>
+  </div>
+
+  <div class="edit-bar">
+    <div class="edit-pill" id="btn-change-audio">🔄 אודיו אחר</div>
+    <div class="edit-pill" id="btn-change-img">🖼 שנה תמונה</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<audio id="audio-el"></audio>
+
+<script>
+const $ = id => document.getElementById(id);
+const audio = $('audio-el');
+
+// ── State ──
+let hasAudio = false;
+
+// ── File Handling ──
+function loadAudio(file) {
+  const url = URL.createObjectURL(file);
+  audio.src = url;
+  audio.load();
+  $('track-title').textContent = file.name.replace(/\.[^.]+$/, '');
+  $('track-sub').textContent = formatSize(file.size);
+  hasAudio = true;
+  showPlayer();
+  toast('אודיו נטען ✓');
+}
+
+function loadImage(file) {
+  const url = URL.createObjectURL(file);
+  $('cover-img').src = url;
+  $('cover-img').style.display = 'block';
+  $('cover-default').style.display = 'none';
+  toast('תמונה נוספה ✓');
+}
+
+function showPlayer() {
+  $('upload-screen').style.display = 'none';
+  $('player-screen').style.display = 'block';
+}
+
+function formatSize(b) {
+  if (b > 1e6) return (b / 1e6).toFixed(1) + ' MB';
+  return (b / 1e3).toFixed(0) + ' KB';
+}
+
+// ── Drop Zone ──
+const dz = $('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  if (file.type.startsWith('audio')) loadAudio(file);
+  else if (file.type.startsWith('image')) loadImage(file);
+});
+dz.addEventListener('click', () => $('audio-input').click());
+
+// ── File Inputs ──
+$('audio-input').addEventListener('change', e => { if (e.target.files[0]) loadAudio(e.target.files[0]); });
+$('image-input').addEventListener('change', e => { if (e.target.files[0]) loadImage(e.target.files[0]); });
+
+// ── Play / Pause ──
+const btnPlay = $('btn-play');
+btnPlay.addEventListener('click', () => {
+  if (!hasAudio) return;
+  audio.paused ? audio.play() : audio.pause();
+});
+
+audio.addEventListener('play', () => {
+  btnPlay.textContent = '⏸';
+  $('playing-indicator').classList.add('active');
+  $('track-sub').textContent = 'מתנגן...';
+});
+audio.addEventListener('pause', () => {
+  btnPlay.textContent = '▶';
+  $('playing-indicator').classList.remove('active');
+  $('track-sub').textContent = 'מושהה';
+});
+audio.addEventListener('ended', () => {
+  btnPlay.textContent = '▶';
+  $('playing-indicator').classList.remove('active');
+  $('track-sub').textContent = 'הסתיים';
+});
+
+// ── Seek ──
+$('progress-bar').addEventListener('click', e => {
+  if (!audio.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  // RTL: right side = start
+  const ratio = 1 - (e.clientX - rect.left) / rect.width;
+  audio.currentTime = ratio * audio.duration;
+});
+
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  $('progress-fill').style.width = pct + '%';
+  $('time-current').textContent = fmt(audio.currentTime);
+  $('time-total').textContent = fmt(audio.duration);
+});
+
+audio.addEventListener('loadedmetadata', () => {
+  $('time-total').textContent = fmt(audio.duration);
+});
+
+function fmt(s) {
+  const m = Math.floor(s / 60);
+  const ss = Math.floor(s % 60).toString().padStart(2, '0');
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    return `${h}:${(m % 60).toString().padStart(2,'0')}:${ss}`;
+  }
+  return `${m}:${ss}`;
+}
+
+// ── Skip 15s ──
+$('btn-back15').addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 15); });
+$('btn-fwd15').addEventListener('click', () => { audio.currentTime = Math.min(audio.duration, audio.currentTime + 15); });
+
+// ── Volume ──
+$('volume-slider').addEventListener('input', e => { audio.volume = e.target.value; });
+
+// ── Edit buttons ──
+$('btn-change-audio').addEventListener('click', () => $('audio-input').click());
+$('btn-change-img').addEventListener('click', () => $('image-input').click());
+
+// ── Toast ──
+let toastTimer;
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
